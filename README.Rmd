@@ -1,8 +1,8 @@
 ---
 title: "Reading from Petrel"
 output:
-  html_document:
-    df_print: paged
+  html_document: 
+    keep_md: yes
 ---
 
 ```{r setup, include = FALSE, error=TRUE, message=FALSE, warning=FALSE}
@@ -23,7 +23,7 @@ knitr::opts_chunk$set(echo = TRUE,
 # read the Petrel/Eclipse file. Assign it to tbl object
 tbl <- read.csv("wellRegion.GRDECL", skip = 1, header = FALSE, 
          stringsAsFactors = FALSE, strip.white = TRUE)
-tbl
+head(tbl)
 ```
 
 
@@ -55,7 +55,7 @@ grep("\\*[0-9]{1,2}", alist_vectors[[1]], value = TRUE, perl=TRUE)
 grep("\\*[0-9]{1,2}", alist_vectors[[1417]], value = TRUE, perl=TRUE)
 ```
 
-## Extract only numbers that have asterik in the middle
+## Extract only numbers that have asterisk in the middle
 
 ```{r}
 # extract with regex
@@ -64,7 +64,7 @@ wanted <- lapply(alist_vectors, function(x) grep("\\*[0-9]{1,2}", x,
 wanted[[1]]   # show a sample
 ```
 
-
+### Create a dataframe with row and value
 
 ```{r}
 # extract row and values. Method #1
@@ -73,9 +73,8 @@ invisible(lapply(seq_along(wanted), function(x) {
     r <- data.frame(row=x, value=wanted[[x]], stringsAsFactors = FALSE)
     df <<- rbind(df, r)
 }))
-df
+tibble::as.tibble(df) 
 ```
-
 
 
 ```{r}
@@ -85,7 +84,7 @@ for (i in 1:length(wanted)) {
     x <- data.frame(row=i, value=wanted[[i]], stringsAsFactors = FALSE)
     df <- rbind(df, x)
 }
-df
+tibble::as.tibble(df) 
 ```
 
 ```{r rows.print=25}
