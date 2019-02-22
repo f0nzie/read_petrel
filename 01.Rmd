@@ -1,0 +1,132 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+read.fwf("wellRegion.GRDECL", )
+```
+
+```{r}
+read.ftable("wellRegion.GRDECL", skip = 1, sep = "*", row.var.names = "row")
+```
+
+
+```{r}
+tbl <- read.delim("wellRegion.GRDECL", skip = 1, sep = " ", header = FALSE, 
+           stringsAsFactors = FALSE)
+tbl
+```
+
+```{r}
+tbl <- read.csv("wellRegion.GRDECL", skip = 1, header = FALSE, 
+         stringsAsFactors = FALSE, strip.white = TRUE)
+tbl
+```
+
+```{r}
+line_01 <- tbl$V1[1]
+line_01
+```
+
+```{r}
+grep("([0-9][0-9]\\*?[0-9])", line_01, value = TRUE)
+```
+
+```{r}
+gsub("[0-9]{1}\\*[0-9]{1}\\S", "", x = line_01, perl=TRUE)
+```
+
+```{r}
+# extract all characters that do not have asterisk in the middle
+gsub("[0-9]{1,2}\\*[0-9]{1,2}\\s", "", x = line_01, perl=TRUE)
+```
+
+```{r}
+# extract all characters that do not have asterisk in the middle
+grep("\\*\\d{1,2}\\s", line_01, perl=TRUE, value = TRUE)
+```
+
+
+```{r}
+grep("([0-9]{1,2}\\*[0-9]{1,2}\\S)", line_02, value = TRUE, perl=TRUE)
+```
+
+```{r}
+line_02 <- unlist(strsplit(line_01, " "))
+line_02
+```
+
+
+
+## convert row to vector of strings
+```{r}
+line_01 <- unlist(strsplit(tbl$V1[1], " "))
+line_01
+```
+
+
+```{r}
+grep("\\*[0-9]{1,2}", line_01, value = TRUE, perl=TRUE)
+```
+
+```{r}
+alist_vectors <- lapply(tbl$V1, function(x) unlist(strsplit(x, " ")))
+alist_vectors[[1]]
+```
+
+```{r}
+len_str <- unlist(lapply(tbl$V1, function(x) length(unlist(strsplit(trimws(x), " ")))))
+head(len_str)
+tail(len_str)
+length(len_str)
+```
+
+```{r}
+grep("\\*[0-9]{1,2}", alist_vectors[[1]], value = TRUE, perl=TRUE)
+```
+
+```{r}
+grep("\\*[0-9]{1,2}", alist_vectors[[2]], value = TRUE, perl=TRUE)
+```
+
+```{r}
+grep("\\*[0-9]{1,2}", alist_vectors[[3]], value = TRUE, perl=TRUE)
+```
+
+
+
+```{r}
+as.data.frame(grep("\\*[0-9]{1,2}", alist_vectors[[1417]], value = TRUE, perl=TRUE))
+```
+
+## Extract only desired numbers
+
+```{r}
+wanted <- lapply(alist_vectors, function(x) grep("\\*[0-9]{1,2}", x, 
+                                                 value = TRUE, perl=TRUE))
+```
+
+
+```{r}
+i_row_vector <- vector("list")
+j_row_vector <- vector("list")
+for (i in 1:(length(wanted)-1410)) {
+    # print(wanted[[1]])
+    # row_vector[[i]] <- list(i, as.data.frame(wanted[i]))
+    # cat(length(wanted[[i]]), "\n")
+    for (j in 1:length(wanted[[i]])) {
+        j_row_vector[[j]] <- list(i, wanted[[i]][j])
+        # print(j_row_vector[[j]])
+    }
+        i_row_vector[[i]] <- list(j_row_vector)
+        print(i_row_vector[[i]])
+    
+}
+```
+
+```{r}
+dt <- data.table::rbindlist(i_row_vector)
+head(dt)
+```
+
