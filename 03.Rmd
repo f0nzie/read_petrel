@@ -1,0 +1,145 @@
+---
+title: "Reading from Petrel"
+output:
+  html_document: 
+    keep_md: yes
+---
+
+```{r setup, include = FALSE, error=TRUE, message=FALSE, warning=FALSE}
+knitr::opts_chunk$set(echo = TRUE, 
+                      comment = "#>",
+                      collapse = TRUE,
+                      error = TRUE,
+                      warning = FALSE,
+                      message = FALSE,
+                      fig.align = 'center'
+                      )
+```
+
+
+## Read file
+
+```{r}
+library(dplyr)
+
+# read the Petrel/Eclipse file. Assign it to tbl object
+tbl <- read.csv("wellRegion.GRDECL", skip = 1, header = FALSE, 
+         stringsAsFactors = FALSE, strip.white = TRUE)
+head(tbl)
+```
+
+
+```{r}
+# convert string to character vectors.
+alist_vectors <- lapply(tbl$V1, function(x) unlist(strsplit(x, " ")))
+alist_vectors[[1]]  # show a sample
+```
+
+```{r}
+# show the number of elements in each row
+len_str <- unlist(lapply(tbl$V1, function(x) 
+    length(unlist(strsplit(trimws(x), " ")))))
+
+head(len_str)
+tail(len_str)
+length(len_str)   # total number of rows in the file
+```
+
+
+```{r}
+# extract row and values for all the strings in the file
+# including numbers without the asterisk
+all_df <- data.frame()
+invisible(lapply(seq_along(alist_vectors), function(x) {
+    r <- data.frame(row=x, value=alist_vectors[[x]], stringsAsFactors = FALSE)
+    all_df <<- rbind(all_df, r)
+}))
+tibble::as.tibble(all_df) 
+```
+
+
+# Filling with values
+
+```{r}
+all_df1 <- 
+all_df %>% 
+  mutate(A = as.integer(gsub("\\*.*", "", value))) %>%
+  mutate(B = as.integer(gsub(".*\\*", "", value))) %>% 
+  rowwise() %>% 
+  mutate(C = ifelse(A != B, list(rep(B, A)), A)) %>% 
+  print()
+```
+
+## Convert to matrix
+
+Verifying from the file:
+
+  1 25*0			
+  2 5*47			
+  3 83*0			
+  4 34			
+  5 34			
+  6 13*47			
+  7 69*0			
+  8 12*34			
+  9 16*47			
+
+```{r}
+matrix(c(
+  all_df1$C[[1]], # 1 25*0			
+  all_df1$C[[2]], # 2 5*47
+  all_df1$C[[3]], # 3 83*0	
+  all_df1$C[[4]], # 4 34
+  all_df1$C[[5]], # 5 34
+  all_df1$C[[6]], # 6 13*47	
+  all_df1$C[[7]], # 7 69*0
+  all_df1$C[[8]], # 8 12*34	
+  all_df1$C[[9]]  # 9 16*47	
+  ), ncol=10, byrow = TRUE)
+```
+
+```{r}
+sa <- sapply(all_df1$C, c)
+```
+
+```{r}
+m <- matrix(unlist(sa), ncol=10, byrow=TRUE)
+```
+
+```{r}
+m[1:200,]
+```
+
+
+
+```{r}
+object.size(m)
+# 1824016 bytes
+```
+
+```{r}
+library(Matrix)
+
+mx <- Matrix(m, sparse = TRUE)
+```
+
+```{r}
+object.size(mx)
+# 2588336 bytes
+```
+
+
+```{r}
+mx
+```
+
+
+
+
+
+
+
+
+
+
+
