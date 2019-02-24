@@ -373,9 +373,17 @@ $(document).ready(function () {
 </div>
 
 
+<div id="objective" class="section level1">
+<h1>Objective</h1>
+<p>Convert the sparse matrix representation of coordinates in a <code>GRDECL</code> file to a matrix of <code>n</code> rows and 10 columns in R.</p>
+</div>
+<div id="transforming-a-grdecl-file-to-a-matrix" class="section level1">
+<h1>Transforming a <code>GRDECL</code> file to a matrix</h1>
 <div id="read-file" class="section level2">
 <h2>Read file</h2>
-<pre class="r"><code># read the Petrel/Eclipse file. Assign it to tbl object
+<pre class="r"><code>library(dplyr)
+
+# read the Petrel/Eclipse file. Assign it to tbl object
 tbl &lt;- read.csv(&quot;wellRegion.GRDECL&quot;, skip = 1, header = FALSE, 
          stringsAsFactors = FALSE, strip.white = TRUE)
 head(tbl)
@@ -385,7 +393,18 @@ head(tbl)
 #&gt; 3  5*22 7*23 10*37 55*0 11*34 31 31 9*22 6*23 11*37 55*0 7*34 6*31 8*22 7*23 13*37 54*0 34 34 34 34 8*31 8*22 7*23 13*37 55*0 31 31
 #&gt; 4 10*31 7*22 23 23 23 26 23 23 23 13*37 55*0 12*31 6*22 23 23 23 23 26 26 23 23 13*37 55*0 12*31 6*22 23 23 23 23 26 26 26 26 37 37
 #&gt; 5  11*37 55*0 12*31 5*22 5*23 26 26 26 13*37 21 21 54*0 13*31 22 22 22 22 8*23 12*37 21 21 21 21 53*0 13*31 22 22 22 27 27 23 23 23
-#&gt; 6  23 23 23 23 10*37 6*21 54*0 11*31 45 45 24 24 27 27 27 24 24 24 24 23 23 9*37 8*21 53*0 9*31 5*45 24 27 27 27 6*24 7*41 21 21 21</code></pre>
+#&gt; 6  23 23 23 23 10*37 6*21 54*0 11*31 45 45 24 24 27 27 27 24 24 24 24 23 23 9*37 8*21 53*0 9*31 5*45 24 27 27 27 6*24 7*41 21 21 21
+tail(tbl)
+#&gt;                                                                                                                                      V1
+#&gt; 1412  13 13 7*6 10*53 14*55 30*0 42 42 42 42 14*43 10*15 13 13 13 10*6 9*53 13*55 31*0 42 42 16*43 5*15 5*28 14*6 8*53 12*55 34*0 43 43
+#&gt; 1413   14*43 15 15 8*28 14*6 8*53 11*55 34*0 18*43 9*28 15*6 7*53 10*55 35*0 18*43 8*28 17*6 5*53 12*46 34*0 18*43 28 28 28 28 50 50 50
+#&gt; 1414 50 50 50 15*6 0 0 0 0 14*46 34*0 17*43 13*50 12*6 0 0 0 16*46 33*0 17*43 14*50 10*6 0 0 0 0 16*46 33*0 17*43 15*50 9*6 0 0 0 46 46
+#&gt; 1415  16*46 33*0 16*43 17*50 6*6 0 0 0 0 18*46 33*0 15*43 20*50 6 6 6 0 0 0 0 20*46 33*0 14*43 0 20*50 6*0 20*46 34*0 11*43 0 0 0 50 50
+#&gt; 1416 17*50 7*0 20*46 36*0 8*43 5*0 18*50 7*0 20*46 50*0 16*50 8*0 20*46 51*0 14*50 9*0 20*46 52*0 12*50 11*0 19*46 54*0 8*50 14*0 46 46
+#&gt; 1417                                                                 15*46 78*0 16*46 78*0 15*46 80*0 13*46 83*0 9*46 87*0 5*46 667*0 /</code></pre>
+<pre class="r"><code># dimensions of the dataframe
+dim(tbl)
+#&gt; [1] 1417    1</code></pre>
 <pre class="r"><code># convert string to character vectors.
 alist_vectors &lt;- lapply(tbl$V1, function(x) unlist(strsplit(x, &quot; &quot;)))
 alist_vectors[[1]]  # show a sample
@@ -393,6 +412,9 @@ alist_vectors[[1]]  # show a sample
 #&gt;  [9] &quot;16*47&quot; &quot;65*0&quot;  &quot;13*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;14*34&quot; &quot;17*47&quot; &quot;63*0&quot; 
 #&gt; [17] &quot;14*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;15*34&quot; &quot;16*47&quot; &quot;63*0&quot;  &quot;34&quot;    &quot;34&quot;   
 #&gt; [25] &quot;34&quot;    &quot;34&quot;</code></pre>
+<pre class="r"><code># number of rows in the list
+length(alist_vectors)
+#&gt; [1] 1417</code></pre>
 <pre class="r"><code># show the number of elements in each row
 len_str &lt;- unlist(lapply(tbl$V1, function(x) 
     length(unlist(strsplit(trimws(x), &quot; &quot;)))))
@@ -404,121 +426,233 @@ tail(len_str)
 length(len_str)   # total number of rows in the file
 #&gt; [1] 1417</code></pre>
 </div>
-<div id="examples" class="section level2">
-<h2>Examples</h2>
-<pre class="r"><code># get only elements with asterisk in row 1
-grep(&quot;\\*[0-9]{1,2}&quot;, alist_vectors[[1]], value = TRUE, perl=TRUE)
-#&gt;  [1] &quot;25*0&quot;  &quot;5*47&quot;  &quot;83*0&quot;  &quot;13*47&quot; &quot;69*0&quot;  &quot;12*34&quot; &quot;16*47&quot; &quot;65*0&quot; 
-#&gt;  [9] &quot;13*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;14*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;14*34&quot; &quot;17*47&quot;
-#&gt; [17] &quot;63*0&quot;  &quot;15*34&quot; &quot;16*47&quot; &quot;63*0&quot;</code></pre>
-<pre class="r"><code># get elements with asterisk in row 1417
-grep(&quot;\\*[0-9]{1,2}&quot;, alist_vectors[[1417]], value = TRUE, perl=TRUE)
-#&gt;  [1] &quot;15*46&quot; &quot;78*0&quot;  &quot;16*46&quot; &quot;78*0&quot;  &quot;15*46&quot; &quot;80*0&quot;  &quot;13*46&quot; &quot;83*0&quot; 
-#&gt;  [9] &quot;9*46&quot;  &quot;87*0&quot;  &quot;5*46&quot;  &quot;667*0&quot;</code></pre>
-</div>
-<div id="extract-only-numbers-that-have-asterisk-in-the-middle" class="section level2">
-<h2>Extract only numbers that have asterisk in the middle</h2>
-<pre class="r"><code># extract with regex
-wanted &lt;- lapply(alist_vectors, function(x) grep(&quot;\\*[0-9]{1,2}&quot;, x, 
-                                                 value = TRUE, perl=TRUE))
-wanted[[1]]   # show a sample
-#&gt;  [1] &quot;25*0&quot;  &quot;5*47&quot;  &quot;83*0&quot;  &quot;13*47&quot; &quot;69*0&quot;  &quot;12*34&quot; &quot;16*47&quot; &quot;65*0&quot; 
-#&gt;  [9] &quot;13*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;14*34&quot; &quot;17*47&quot; &quot;63*0&quot;  &quot;14*34&quot; &quot;17*47&quot;
-#&gt; [17] &quot;63*0&quot;  &quot;15*34&quot; &quot;16*47&quot; &quot;63*0&quot;</code></pre>
-<div id="create-a-dataframe-with-row-and-value" class="section level3">
-<h3>Create a dataframe with row and value</h3>
-<pre class="r"><code># extract row and values. Method #1
-df &lt;- data.frame()
-invisible(lapply(seq_along(wanted), function(x) {
-    r &lt;- data.frame(row=x, value=wanted[[x]], stringsAsFactors = FALSE)
-    df &lt;&lt;- rbind(df, r)
+<div id="extract-elements-from-file" class="section level2">
+<h2>Extract elements from file</h2>
+<pre class="r"><code># extract row and values for all the strings in the file
+# including numbers without the asterisk
+all_df &lt;- data.frame()
+invisible(lapply(seq_along(alist_vectors), function(x) {
+    r &lt;- data.frame(row=x, value=alist_vectors[[x]], stringsAsFactors = FALSE)
+    all_df &lt;&lt;- rbind(all_df, r)
 }))
-tibble::as.tibble(df) 
-#&gt; # A tibble: 24,147 x 2
+tibble::as_tibble(all_df) 
+#&gt; # A tibble: 44,610 x 2
 #&gt;      row value
 #&gt;    &lt;int&gt; &lt;chr&gt;
 #&gt;  1     1 25*0 
 #&gt;  2     1 5*47 
 #&gt;  3     1 83*0 
-#&gt;  4     1 13*47
-#&gt;  5     1 69*0 
-#&gt;  6     1 12*34
-#&gt;  7     1 16*47
-#&gt;  8     1 65*0 
-#&gt;  9     1 13*34
-#&gt; 10     1 17*47
-#&gt; # ... with 24,137 more rows</code></pre>
-<pre class="r"><code># extract row and values. Method #2
-df &lt;- data.frame()
-for (i in 1:length(wanted)) {
-    x &lt;- data.frame(row=i, value=wanted[[i]], stringsAsFactors = FALSE)
-    df &lt;- rbind(df, x)
-}
-tibble::as.tibble(df) 
-#&gt; # A tibble: 24,147 x 2
-#&gt;      row value
-#&gt;    &lt;int&gt; &lt;chr&gt;
-#&gt;  1     1 25*0 
-#&gt;  2     1 5*47 
-#&gt;  3     1 83*0 
-#&gt;  4     1 13*47
-#&gt;  5     1 69*0 
-#&gt;  6     1 12*34
-#&gt;  7     1 16*47
-#&gt;  8     1 65*0 
-#&gt;  9     1 13*34
-#&gt; 10     1 17*47
-#&gt; # ... with 24,137 more rows</code></pre>
-<pre class="r"><code># get specific row from the original file
-library(dplyr)
-
-df %&gt;% 
-    filter(row==1)
-#&gt;    row value
-#&gt; 1    1  25*0
-#&gt; 2    1  5*47
-#&gt; 3    1  83*0
-#&gt; 4    1 13*47
-#&gt; 5    1  69*0
-#&gt; 6    1 12*34
-#&gt; 7    1 16*47
-#&gt; 8    1  65*0
-#&gt; 9    1 13*34
-#&gt; 10   1 17*47
-#&gt; 11   1  63*0
-#&gt; 12   1 14*34
-#&gt; 13   1 17*47
-#&gt; 14   1  63*0
-#&gt; 15   1 14*34
-#&gt; 16   1 17*47
-#&gt; 17   1  63*0
-#&gt; 18   1 15*34
-#&gt; 19   1 16*47
-#&gt; 20   1  63*0</code></pre>
-<pre class="r"><code># another way to extract row 1
-df[df$row==1,]
-#&gt;    row value
-#&gt; 1    1  25*0
-#&gt; 2    1  5*47
-#&gt; 3    1  83*0
-#&gt; 4    1 13*47
-#&gt; 5    1  69*0
-#&gt; 6    1 12*34
-#&gt; 7    1 16*47
-#&gt; 8    1  65*0
-#&gt; 9    1 13*34
-#&gt; 10   1 17*47
-#&gt; 11   1  63*0
-#&gt; 12   1 14*34
-#&gt; 13   1 17*47
-#&gt; 14   1  63*0
-#&gt; 15   1 14*34
-#&gt; 16   1 17*47
-#&gt; 17   1  63*0
-#&gt; 18   1 15*34
-#&gt; 19   1 16*47
-#&gt; 20   1  63*0</code></pre>
+#&gt;  4     1 34   
+#&gt;  5     1 34   
+#&gt;  6     1 13*47
+#&gt;  7     1 69*0 
+#&gt;  8     1 12*34
+#&gt;  9     1 16*47
+#&gt; 10     1 65*0 
+#&gt; # ... with 44,600 more rows</code></pre>
+<pre class="r"><code># dimensions of the dataframe
+dim(all_df)
+#&gt; [1] 44610     2</code></pre>
 </div>
+<div id="remove-non-numeric-elements" class="section level2">
+<h2>Remove non-numeric elements</h2>
+<pre class="r"><code># example
+# we provide a sample of what will results if we apply grep/grepl
+# the asterisk in between numbers is accepted as valied with regex &quot;\\d&quot;
+grep(&quot;\\d&quot;, c(&quot;10*5&quot;, &quot;34&quot;, &quot;7*7&quot;, &quot;/&quot;, &quot;3*5&quot;, &quot;*&quot;, &quot;\\&quot;, &quot;-&quot;,  &quot;\\.&quot;), value = TRUE)
+#&gt; [1] &quot;10*5&quot; &quot;34&quot;   &quot;7*7&quot;  &quot;3*5&quot;</code></pre>
+<pre class="r"><code># we proceed to remove extraneous characters from the value variable
+all_df %&gt;% 
+  filter(grepl(&quot;\\d&quot;, value)) %&gt;% 
+  as_tibble() %&gt;% 
+  print() -&gt; all_df
+#&gt; # A tibble: 44,609 x 2
+#&gt;      row value
+#&gt;    &lt;int&gt; &lt;chr&gt;
+#&gt;  1     1 25*0 
+#&gt;  2     1 5*47 
+#&gt;  3     1 83*0 
+#&gt;  4     1 34   
+#&gt;  5     1 34   
+#&gt;  6     1 13*47
+#&gt;  7     1 69*0 
+#&gt;  8     1 12*34
+#&gt;  9     1 16*47
+#&gt; 10     1 65*0 
+#&gt; # ... with 44,599 more rows</code></pre>
+<pre class="r"><code># dimensions of the dataframe
+dim(all_df)
+#&gt; [1] 44609     2</code></pre>
+<p>Notice that a row has been removed from the GRDECL file. If you go to the raw data file you will see that the end character in the files is “\”. That characters has been removed.</p>
+</div>
+<div id="parse-the-string-elements-and-convert" class="section level2">
+<h2>Parse the string elements and convert</h2>
+<pre class="r"><code>all_df1 &lt;- 
+all_df %&gt;% 
+  mutate(A = as.integer(gsub(&quot;\\*.*&quot;, &quot;&quot;, value))) %&gt;%  # extract the part on the left
+  mutate(B = as.integer(gsub(&quot;(^[0-9]{1,2}|.*\\*)&quot;, &quot;&quot;, value))) %&gt;%  # part on the right
+  rowwise() %&gt;%                                        # operate on the row
+  mutate(C = ifelse(!is.na(B), list(rep(B, A)), A)) %&gt;%   # repeat when A and B are different
+  as_tibble() %&gt;% 
+  print()
+#&gt; # A tibble: 44,609 x 5
+#&gt;      row value     A     B C         
+#&gt;    &lt;int&gt; &lt;chr&gt; &lt;int&gt; &lt;int&gt; &lt;list&gt;    
+#&gt;  1     1 25*0     25     0 &lt;int [25]&gt;
+#&gt;  2     1 5*47      5    47 &lt;int [5]&gt; 
+#&gt;  3     1 83*0     83     0 &lt;int [83]&gt;
+#&gt;  4     1 34       34    NA &lt;int [1]&gt; 
+#&gt;  5     1 34       34    NA &lt;int [1]&gt; 
+#&gt;  6     1 13*47    13    47 &lt;int [13]&gt;
+#&gt;  7     1 69*0     69     0 &lt;int [69]&gt;
+#&gt;  8     1 12*34    12    34 &lt;int [12]&gt;
+#&gt;  9     1 16*47    16    47 &lt;int [16]&gt;
+#&gt; 10     1 65*0     65     0 &lt;int [65]&gt;
+#&gt; # ... with 44,599 more rows</code></pre>
+</div>
+<div id="testing-the-correct-parsing" class="section level2">
+<h2>Testing the correct parsing</h2>
+<p>Verifying from the file for the first 9 rows:</p>
+<pre><code>1 25*0          
+2 5*47          
+3 83*0          
+4 34            
+5 34            
+6 13*47         
+7 69*0          
+8 12*34         
+9 16*47         </code></pre>
+<p>Corresponds to the follwoing matrix:</p>
+<pre class="r"><code>matrix(c(
+  all_df1$C[[1]], # 1 25*0          
+  all_df1$C[[2]], # 2 5*47
+  all_df1$C[[3]], # 3 83*0  
+  all_df1$C[[4]], # 4 34
+  all_df1$C[[5]], # 5 34
+  all_df1$C[[6]], # 6 13*47 
+  all_df1$C[[7]], # 7 69*0
+  all_df1$C[[8]], # 8 12*34 
+  all_df1$C[[9]]  # 9 16*47 
+  ), ncol=10, byrow = TRUE)
+#&gt;       [,1] [,2] [,3] [,4] [,5] [,6] [,7] [,8] [,9] [,10]
+#&gt;  [1,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [2,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [3,]    0    0    0    0    0   47   47   47   47    47
+#&gt;  [4,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [5,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [6,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [7,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [8,]    0    0    0    0    0    0    0    0    0     0
+#&gt;  [9,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [10,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [11,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [12,]    0    0    0   34   34   47   47   47   47    47
+#&gt; [13,]   47   47   47   47   47   47   47   47    0     0
+#&gt; [14,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [15,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [16,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [17,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [18,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [19,]    0    0    0    0    0    0    0    0    0     0
+#&gt; [20,]    0    0    0    0    0    0    0   34   34    34
+#&gt; [21,]   34   34   34   34   34   34   34   34   34    47
+#&gt; [22,]   47   47   47   47   47   47   47   47   47    47
+#&gt; [23,]   47   47   47   47   47    0    0    0    0     0</code></pre>
+</div>
+<div id="convert-dataframe-variable-to-matrix" class="section level2">
+<h2>Convert dataframe variable to matrix</h2>
+<pre class="r"><code>sa &lt;- sapply(all_df1$C, c)                   # dataframe var to list of vectors
+m &lt;- matrix(unlist(sa), ncol=10, byrow=TRUE) # list of vectors to matrix. 10 cols
+dim(m)                                       # dimensions of the matrix
+#&gt; [1] 45675    10</code></pre>
+<div id="extract-the-first-row-from-the-matrix" class="section level3">
+<h3>Extract the first row from the matrix</h3>
+<pre class="r"><code>m[1, ]
+#&gt;  [1] 0 0 0 0 0 0 0 0 0 0</code></pre>
+</div>
+<div id="extract-the-third-row-from-the-matrix" class="section level3">
+<h3>Extract the third row from the matrix</h3>
+<pre class="r"><code>m[3, ]
+#&gt;  [1]  0  0  0  0  0 47 47 47 47 47</code></pre>
+</div>
+<div id="extract-the-row-21-from-the-matrix" class="section level3">
+<h3>Extract the row 21 from the matrix</h3>
+<pre class="r"><code>m[21, ]
+#&gt;  [1] 34 34 34 34 34 34 34 34 34 47</code></pre>
+</div>
+<div id="extract-the-last-row-from-the-matrix" class="section level3">
+<h3>Extract the last row from the matrix</h3>
+<pre class="r"><code>m[nrow(m),]
+#&gt;  [1] 0 0 0 0 0 0 0 0 0 0</code></pre>
+</div>
+</div>
+</div>
+<div id="convert-to-a-sparse-matrix" class="section level1">
+<h1>Convert to a sparse matrix</h1>
+<p>Finally we convert the dense matrix to a sparse matrix.</p>
+<pre class="r"><code>library(Matrix)
+
+ms &lt;- Matrix(m, sparse = TRUE)
+ms[1:50,]
+#&gt; 50 x 10 sparse Matrix of class &quot;dgCMatrix&quot;
+#&gt;                                    
+#&gt;  [1,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [2,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [3,]  .  .  .  .  . 47 47 47 47 47
+#&gt;  [4,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [5,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [6,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [7,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [8,]  .  .  .  .  .  .  .  .  .  .
+#&gt;  [9,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [10,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [11,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [12,]  .  .  . 34 34 47 47 47 47 47
+#&gt; [13,] 47 47 47 47 47 47 47 47  .  .
+#&gt; [14,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [15,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [16,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [17,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [18,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [19,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [20,]  .  .  .  .  .  .  . 34 34 34
+#&gt; [21,] 34 34 34 34 34 34 34 34 34 47
+#&gt; [22,] 47 47 47 47 47 47 47 47 47 47
+#&gt; [23,] 47 47 47 47 47  .  .  .  .  .
+#&gt; [24,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [25,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [26,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [27,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [28,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [29,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [30,] 34 34 34 34 34 34 34 34 34 34
+#&gt; [31,] 34 34 34 47 47 47 47 47 47 47
+#&gt; [32,] 47 47 47 47 47 47 47 47 47 47
+#&gt; [33,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [34,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [35,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [36,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [37,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [38,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [39,]  .  .  . 34 34 34 34 34 34 34
+#&gt; [40,] 34 34 34 34 34 34 34 47 47 47
+#&gt; [41,] 47 47 47 47 47 47 47 47 47 47
+#&gt; [42,] 47 47 47 47  .  .  .  .  .  .
+#&gt; [43,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [44,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [45,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [46,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [47,]  .  .  .  .  .  .  .  .  .  .
+#&gt; [48,]  .  .  .  .  .  .  . 34 34 34
+#&gt; [49,] 34 34 34 34 34 34 34 34 34 34
+#&gt; [50,] 34 47 47 47 47 47 47 47 47 47</code></pre>
+</div>
+<div id="references" class="section level1">
+<h1>References</h1>
+<ul>
+<li><a href="http://petrofaq.org/wiki/Eclipse_Input_Data" class="uri">http://petrofaq.org/wiki/Eclipse_Input_Data</a></li>
+<li><a href="http://www.johnmyleswhite.com/notebook/2011/10/31/using-sparse-matrices-in-r/" class="uri">http://www.johnmyleswhite.com/notebook/2011/10/31/using-sparse-matrices-in-r/</a></li>
+</ul>
 </div>
 
 
