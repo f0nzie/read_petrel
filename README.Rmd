@@ -113,10 +113,12 @@ all_df %>%
   mutate(A = as.integer(gsub("\\*.*", "", value))) %>%  # extract the part on the left
   mutate(B = as.integer(gsub("(^[0-9]{1,2}|.*\\*)", "", value))) %>%  # part on the right
   rowwise() %>%                                        # operate on the row
-  mutate(C = ifelse(!is.na(B), list(rep(B, A)), A)) %>%   # repeat when A and B are different
+  mutate(C = ifelse(!is.na(B), list(rep(B, A)), A)) %>%   # when B is not NA
   as_tibble() %>% 
   print()
 ```
+
+Variable `C` has vectors for each of the parsed strings in `value`.
 
 
 ## Testing the correct parsing
