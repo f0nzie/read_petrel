@@ -182,6 +182,12 @@ m[21, ]
 m[nrow(m),]
 ```
 
+### Extract the last 100 rows from the matrix
+
+```{r}
+m[nrow(m):(nrow(m)-100),]
+```
+
 # Convert to a sparse matrix
 Finally we convert the dense matrix to a sparse matrix.
 
@@ -190,6 +196,10 @@ library(Matrix)
 
 ms <- Matrix(m, sparse = TRUE)
 ms[1:50,]
+```
+
+```{r}
+dim(ms)
 ```
 
 
