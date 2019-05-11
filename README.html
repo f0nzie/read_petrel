@@ -254,9 +254,7 @@ h6 {
 </style>
 
 
-</head>
 
-<body>
 
 <style type="text/css">
 .main-container {
@@ -287,8 +285,6 @@ summary {
 </style>
 
 
-
-<div class="container-fluid main-container">
 
 <!-- tabsets -->
 
@@ -360,6 +356,15 @@ $(document).ready(function () {
 
 <!-- code folding -->
 
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
 
 
 
@@ -449,7 +454,7 @@ tibble::as_tibble(all_df)
 #&gt;  8     1 12*34
 #&gt;  9     1 16*47
 #&gt; 10     1 65*0 
-#&gt; # ... with 44,600 more rows</code></pre>
+#&gt; # … with 44,600 more rows</code></pre>
 <pre class="r"><code># dimensions of the dataframe
 dim(all_df)
 #&gt; [1] 44610     2</code></pre>
@@ -479,7 +484,7 @@ all_df %&gt;%
 #&gt;  8     1 12*34
 #&gt;  9     1 16*47
 #&gt; 10     1 65*0 
-#&gt; # ... with 44,599 more rows</code></pre>
+#&gt; # … with 44,599 more rows</code></pre>
 <pre class="r"><code># dimensions of the dataframe
 dim(all_df)
 #&gt; [1] 44609     2</code></pre>
@@ -508,7 +513,7 @@ all_df %&gt;%
 #&gt;  8     1 12*34    12    34 &lt;int [12]&gt;
 #&gt;  9     1 16*47    16    47 &lt;int [16]&gt;
 #&gt; 10     1 65*0     65     0 &lt;int [65]&gt;
-#&gt; # ... with 44,599 more rows</code></pre>
+#&gt; # … with 44,599 more rows</code></pre>
 <p>Variable <code>C</code> has vectors for each of the parsed strings in <code>value</code>.</p>
 </div>
 <div id="testing-the-correct-parsing" class="section level2">

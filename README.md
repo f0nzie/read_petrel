@@ -106,7 +106,7 @@ tibble::as_tibble(all_df)
 #>  8     1 12*34
 #>  9     1 16*47
 #> 10     1 65*0 
-#> # ... with 44,600 more rows
+#> # … with 44,600 more rows
 ```
 
 
@@ -148,7 +148,7 @@ all_df %>%
 #>  8     1 12*34
 #>  9     1 16*47
 #> 10     1 65*0 
-#> # ... with 44,599 more rows
+#> # … with 44,599 more rows
 ```
 
 
@@ -185,7 +185,7 @@ all_df %>%
 #>  8     1 12*34    12    34 <int [12]>
 #>  9     1 16*47    16    47 <int [16]>
 #> 10     1 65*0     65     0 <int [65]>
-#> # ... with 44,599 more rows
+#> # … with 44,599 more rows
 ```
 
 Variable `C` has vectors for each of the parsed strings in `value`.
